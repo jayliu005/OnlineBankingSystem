@@ -1,0 +1,13 @@
+FROM eclipse-temurin:21-jdk AS build
+WORKDIR /workspace
+COPY .mvn/ .mvn/
+COPY mvnw pom.xml ./
+RUN ./mvnw dependency:go-offline
+COPY src/ src/
+RUN ./mvnw package -DskipTests
+
+FROM eclipse-temurin:21-jre
+WORKDIR /application
+COPY --from=build /workspace/target/OnlineBankingSystem-*.jar application.jar
+EXPOSE 8080
+ENTRYPOINT ["java", "-jar", "application.jar"]

@@ -1,0 +1,69 @@
+# OnlineBankingSystem
+
+此專案是舊 `onlinebanking` 系統的全新實作。舊專案只作功能與行為基準；新程式不修改舊 JSF、Spring Web Flow、Spring 4 或 XML 架構，也不移轉舊資料。
+
+開始開發前必須閱讀 [專案Migration.md](專案Migration.md)。
+
+## 架構
+
+```text
+Vue SPA (localhost:5173)
+    ↓ REST JSON
+Spring Boot (localhost:18080)
+    ↓ JDBC / Flyway
+Oracle (localhost:11521)
+```
+
+- `frontend/`：Vue、TypeScript、Vue Router、Pinia。
+- `backend/`：Java 21、Spring Boot、Spring Data JPA、Flyway、Oracle JDBC。
+- `database/`：schema migration 導覽與舊 schema 結構參考。
+- `infra/`：本機 Oracle 與後端 Docker Compose。
+- `docs/`：功能分析與新舊人工比對紀錄。
+
+## 本機建置
+
+後端：
+
+```bash
+cd backend
+JAVA_HOME=$(/usr/libexec/java_home -v 21) ./mvnw clean package -DskipTests
+```
+
+前端：
+
+```bash
+cd frontend
+npm install
+npm run build
+```
+
+## 啟動 Oracle 與後端
+
+```bash
+cp infra/.env.example infra/.env
+# 編輯 infra/.env，填入只供本機使用的密碼
+docker compose --env-file infra/.env -f infra/compose.yaml up --build
+```
+
+啟動時 Flyway 會從空白 schema 建立 `BANK_USER`、`ACCOUNT`、`TRANSACTION_REC` 與舊系統使用的 `HIBERNATE_SEQUENCE`。migration 不包含舊資料，也不會執行刪表 SQL。
+
+前端開發伺服器會將 `/api` 代理至 `localhost:18080`：
+
+```bash
+cd frontend
+npm run dev
+```
+
+
+
+## Migration 進度
+
+- [x] 建立新專案骨架。
+- [x] 建立全新 Oracle schema migration。
+- [x] 註冊、登入與登出。
+- [x] 帳戶清單與建立帳戶。
+- [x] 存款與提款。
+- [x] 轉帳。
+- [x] 交易紀錄。
+- [x] 個人資料查詢與修改。
+- [x] 新舊系統人工比對。
